@@ -1,0 +1,28 @@
+<div class="container" ng-controller="SubscriptionCtrl">
+    <div class="row">
+
+        <div class="col-sm-push-2 col-sm-8 text-center">
+            <h2>Subscribe to our mailing list!</h2>
+            <p>If you want to stay informed about important announcements leave your email address in the form below.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="row">
+                <div class=" col-lg-push-2 col-lg-8 keep-in-touch-input">
+                    <form ng-submit="submitSubscription(subscriber)" name="subscribeForm" novalidate>
+                        <div class="input-group input-group-lg" >
+                            <input type="email" class="form-control keep-in-touch-form" required="" ng-model-options="{ debounce: 1000 }" ng-model="subscriber.email" placeholder="Your email address..." aria-label="...">
+                              <span class="input-group-btn">
+                                <button class="btn btn-red keep-in-touch-button-last" type="button" ng-disabled="loading" ng-click="submitSubscription(subscriber)"><span ng-if="! loading">Go!</span> <span ng-if="loading"><i class="fa fa-circle-o-notch fa-spin"></i></span></button>
+                              </span>
+                        </div>
+                    </form>
+                    <br/>
+                    <alert type="success" ng-if="subscriptionSuccess"> Thank you for subscribing to our mailing list.</alert>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

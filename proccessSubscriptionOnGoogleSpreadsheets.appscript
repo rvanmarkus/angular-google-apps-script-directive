@@ -1,0 +1,50 @@
+function doGet(e) { // if you want to use GET data use doGet(e)
+  var ss = SpreadsheetApp.openById(ScriptProperties.getProperty('active')); // if you need to write anything to the sheet you'll need this to set the active sheet
+  //http://www.google.com/support/forum/p/apps-script/thread?tid=04d9d3d4922b8bfb&hl=en
+  var app = UiApp.createApplication();
+  var panel = app.createVerticalPanel();
+  for( p in e.parameters){ // this is just clycling through the parameters passed to the sheet. You can replace this to write to a particular cell
+    panel.add(app.createLabel(p +" "+e.parameters[p]));
+  }
+  var lock = LockService.getPublicLock();
+  lock.waitLock(30000); // wait 30 seconds before conceding defeat.
+  
+  try {
+    // next set where we write the data - you could write to multiple/alternate destinations
+    var sheet = ss.getSheetByName('maildata'); 
+    // we'll assume header is in row 1 but you can override with header_row in GET/POST data
+    var headRow = e.parameter.header_row || 1;
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var nextRow = sheet.getLastRow()+1; // get next row
+    var row = [];
+    // loop through the header columns
+    for (i in headers) {
+      if (headers[i] == "Timestamp"){ // special case if you include a 'Timestamp' column
+        row.push(new Date());
+      } else { // else use header name to get data
+        row.push(e.parameter[headers[i]]);
+      }
+    }
+    // more efficient to set values as [][] array than individually
+    sheet.getRange(nextRow, 1, 1, row.length).setValues([row]);
+    // return json success results
+    return ContentService
+          .createTextOutput(JSON.stringify({"result":"success", "row": nextRow}))
+          .setMimeType(ContentService.MimeType.JSON);
+  } catch(e) {
+    // if error return this
+    return ContentService
+          .createTextOutput(JSON.stringify({"result":"error", "error": e}))
+          .setMimeType(ContentService.MimeType.JSON);
+  } finally { //release lock
+    lock.releaseLock();
+  }
+  
+  app.add(panel);
+  return app;
+}
+ 
+//http://www.google.sc/support/forum/p/apps-script/thread?tid=345591f349a25cb4&hl=en
+function setUp() { // you need to manually run this script once to collect the spreadsheet ID
+  ScriptProperties.setProperty('active', SpreadsheetApp.getActiveSpreadsheet().getId());
+}
